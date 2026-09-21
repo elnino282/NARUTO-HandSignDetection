@@ -1,14 +1,14 @@
-﻿火遁,Fire Style,豪火球の術,Fireball Jutsu,巳,寅,申,亥,午,寅,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-火遁,Fire Style,豪火球の術,Fireball Jutsu,巳,未,申,亥,午,寅,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-,,分身の術,Clone Jutsu,未,巳,寅,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-,,口寄せの術,Summoning Jutsu,戌,亥,酉,申,未,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-,,口寄せ 土遁追牙の術,Summoning: Earth Style: Fanged Pursuit Jutsu,寅,巳,辰,戌,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-火遁,Fire Style,鳳仙花の術,Phoenix Flower Jutsu,子,寅,戌,丑,卯,寅,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-水遁,Water Style,水乱破の術,Water Trumpet,辰,寅,卯,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-,,口寄せ 穢土転生の術,Summoning Jutsu: Impure World Reincarnation,寅,巳,戌,辰,祈,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-火遁,Fire Style,龍火の術,Dragon Flame Jutsu,巳,辰,卯,寅,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-水遁,Water Style,水鮫弾の術,Water Shark Bomb Jutsu,寅,丑,辰,卯,酉,辰,未,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-,,屍鬼封尽の術,Sealing Jutsu: Reaper Death Seal,巳,亥,未,卯,戌,子,酉,午,巳,祈,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-水遁,Fire Style,水龍弾の術,Water Dragon Jutsu,丑,申,卯,子,亥,酉,丑,午,酉,子,寅,戌,寅,巳,丑,未,巳,亥,未,子,壬,申,酉,辰,酉,丑,午,未,寅,巳,子,申,卯,亥,辰,未,子,丑,申,酉,壬,子,亥,酉
-火遁,Fire Style,火龍炎弾の術,Dragon Flame Bomb,未,午,巳,辰,子,丑,寅,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-,,変わり身の術,Substitution Jutsu,未,亥,丑,戌,巳,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Fire Style,Fireball Jutsu,6,3,9,12,7,3
+Fire Style,Fireball Jutsu,6,8,9,12,7,3
+,Clone Jutsu,8,6,3
+,Summoning Jutsu,11,12,10,9,8
+,Summoning: Earth Style: Fanged Pursuit Jutsu,3,6,5,11
+Fire Style,Phoenix Flower Jutsu,1,3,11,2,4,3
+Water Style,Water Trumpet,5,3,4
+,Summoning Jutsu: Impure World Reincarnation,3,6,11,5,13
+Fire Style,Dragon Flame Jutsu,6,5,4,3
+Water Style,Water Shark Bomb Jutsu,3,2,5,4,10,5,8
+,Sealing Jutsu: Reaper Death Seal,6,12,8,4,11,1,10,7,6,13
+Water Style,Water Dragon Jutsu,2,9,4,1,12,10,2,7,10,1,3,11,3,6,2,8,6,12,8,1,15,9,10,5,10,2,7,8,3,6,1,9,4,12,5,8,1,2,9,10,15,1,12,10
+Fire Style,Dragon Flame Bomb,8,7,6,5,1,2,3
+,Substitution Jutsu,8,12,2,11,6

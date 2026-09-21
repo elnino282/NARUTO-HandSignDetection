@@ -1,70 +1,193 @@
-[Japanese/[English](README_EN.md)]
-
----
 # NARUTO-HandSignDetection
-物体検出を用いてNARUTOの印を検出するモデルとサンプルプログラムです。
-<!--
-![header](https://user-images.githubusercontent.com/37477845/95489808-4fb55c80-09d2-11eb-95f0-c3cdc6d55d83.png)
--->
-<div align="left">
 
-<img src="https://user-images.githubusercontent.com/37477845/95489944-78d5ed00-09d2-11eb-96f6-a687b012c413.gif" width="45%">　<img src="https://user-images.githubusercontent.com/37477845/95645297-97360880-0af8-11eb-9134-d92cbfb5fe42.gif" width="40%"><!--　<img src="https://user-images.githubusercontent.com/37477845/95490010-93a86180-09d2-11eb-8185-e50fd2b5c137.gif" width="45%">--><br>
+Deep Sharingan: Naruto hand-sign recognition using YOLOX object detection.
+This repository provides trained models and Python demos for recognizing hand signs
+and matching their sequences to ninjutsu from <span id="cite_ref-2">Naruto</span> [2](#cite_note-2).
+The current YOLOX demos, configuration files, and documentation use English.
+The original SSD/EfficientDet demos remain unchanged in [`_legacy/v2`](./_legacy/v2).
 
-右図：© NARUTO -ナルト- 9話『写輪眼のカカシ』岸本斉史作/集英社/studioぴえろ<br>
-※<span id="cite_ref-1">日本の著作権法 第二十条「同一性保持権」</span><sup>[1](#cite_note-1)</sup>における「改変」に相当する可能性があるため、<br>
-　右図にはバウンディングボックスのオーバーレイ表示は行っておりません。
+<img src="https://user-images.githubusercontent.com/37477845/95489944-78d5ed00-09d2-11eb-96f6-a687b012c413.gif" width="45%"> <img src="https://user-images.githubusercontent.com/37477845/95645297-97360880-0af8-11eb-9134-d92cbfb5fe42.gif" width="40%">
 
-<!-- ![21](https://user-images.githubusercontent.com/37477845/95489944-78d5ed00-09d2-11eb-96f6-a687b012c413.gif)![22](https://user-images.githubusercontent.com/37477845/95490010-93a86180-09d2-11eb-8185-e50fd2b5c137.gif) -->
-</div>
-<!--
-![footer](https://user-images.githubusercontent.com/37477845/95489817-5348e380-09d2-11eb-9df0-3ddd06703c55.png)
--->
+Right image: © NARUTO Episode 9, *Kakashi, Sharingan Warrior!*,
+Masashi Kishimoto / Shueisha / Studio Pierrot.
+The original demonstration omits bounding-box overlays on this image because the
+author considered them a possible modification under
+<span id="cite_ref-1">Article 20 of Japan's Copyright Act</span> [1](#cite_note-1).
+These historical images may still contain Japanese text; they do not show the new English interface.
 
----
+## Overview
 
-# Title
-Deep写輪眼：オブジェクト検出 YOLOX を用いた NARUTO の印認識<br>
+Most ninjutsu require a sequence of hand signs. Different nature transformations
+also feature characteristic signs, such as Tiger for Fire Style and Boar for Earth Style.
+The demos detect individual signs and display a technique when the complete sign
+history matches a configured sequence. YOLOX-Nano replaces the earlier
+EfficientDet-D0 implementation to improve inference speed.
 
-# Abstract
-このリポジトリは、<span id="cite_ref-2">NARUTO</span><sup>[2](#cite_note-2)</sup> の印を認識するための訓練済みモデルとサンプルプログラムを公開しています。<br><br>
-忍術の発動は、一部の忍術をのぞき手で印を結ぶことが必要です。<br>
-また、性質変化は印に特徴が現れるため(火遁→寅の印、土遁→亥の印など)、<br>
-印を素早く認識することが出来れば、忍同士の戦闘においてアドバンテージを得ることが出来ます。<br>
-印の認識にはディープラーニングの物体検出モデルの一つYOLOX-Nanoを使用することで、<br>
-前回バージョンのDeep写輪眼(EfficientDet-D0利用)よりも推論速度を大幅にアップしました。<br>
+## Requirements
 
-<!--# Introduction
--->
-# Requirements
-* onnxruntime 1.10.0 or Later
-* OpenCV 3.4.2 or Later
-* Pillow 6.1.0 or Later (Ninjutsu_demo.pyを動かす場合のみ)
-* Tensorflow 2.3.0 or Later (SSD、EfficientDetを動かす場合、あるいは後処理をONNXへマージするときのみ)
+- ONNX Runtime 1.10.0 or later
+- OpenCV 3.4.2 or later
+- NumPy (used by the model wrappers)
+- Pillow 6.1.0 or later, for `Ninjutsu_demo.py`
+- TensorFlow 2.3.0 or later, only for legacy SSD/EfficientDet demos or the post-processing conversion workflow
 
-# DataSet
-### データセットについて
-データセットは非公開です（訓練済みのモデルは公開します）<br>
-※<span id="cite_ref-3">日本の著作権法 第四十七条の七「複製権の制限により作成された複製物の譲渡」</span><sup>[3](#cite_note-3)</sup>に準拠
+Install the current demo dependencies in your Python environment:
 
-また、自分で撮影した画像、アニメ画像の他に、<span id="cite_ref-4">naruto-hand-sign-dataset</span><sup>[4](#cite_note-4)</sup>を利用しています。
+```bash
+python -m pip install onnxruntime opencv-python numpy Pillow
+```
 
-### お願い事項
-データセットはネット上で収集した画像と、自前で撮影した画像で構成されているため、<br>
-背景色や服装によっては検出精度が落ちたり、誤検出する可能性があります。<br>
-Issueで誤検出した条件を教えていただると助かります。<br>
-可能であれば、誤検出する条件の画像(子～亥、壬、合掌)をいただけると大変助かります。<br>
-その際、いただいた画像は学習データセットに追加してモデルの再訓練に使用します。
+## Usage
 
-### 印の種類
-14種類(子～亥、壬、合掌)の印に対応しています。<br>
+Run from the repository root so relative model, CSV, and font paths resolve:
+
+```bash
+python simple_demo.py
+python simple_demo_without_post.py
+python Ninjutsu_demo.py
+python Ninjutsu_demo.py --file path/to/video.mp4
+```
+
+Press **Esc** to exit. In the ninjutsu demo, press **c** to clear the hand-sign history.
+English names are always used. Ninjutsu appear as `Fire Style: Fireball Jutsu`;
+history entries are separated by arrows. If the history does not fit, the footer
+shows `...` followed by the newest signs. Recognition still uses the full history
+(up to 44 signs), independently of the display queue (up to 18 signs).
+
+### Demo files
+
+| File | Purpose | Default model |
+| --- | --- | --- |
+| `simple_demo.py` | Detection with Python post-processing | `model/yolox/yolox_nano.onnx` |
+| `simple_demo_without_post.py` | Detection with post-processing embedded in ONNX; writes `output.mp4` | `model/yolox/yolox_nano_with_post.onnx` |
+| `Ninjutsu_demo.py` | Detection, sign history, and ninjutsu matching | `model/yolox/yolox_nano.onnx` |
+
+### Options shared by all three demos
+
+| Option | Default | Meaning |
+| --- | --- | --- |
+| `--device` | `0` | Camera device number |
+| `--file` | `None` | Video input; takes precedence over the camera |
+| `--width` | `960` | Requested capture width |
+| `--height` | `540` | Requested capture height |
+| `--fps` | `30` | Target processing FPS, subject to inference speed |
+| `--skip_frame` | `0` | Process every N+1 frames |
+| `--model` | See table above | ONNX model path |
+| `--input_shape` | `416,416` | Inference input shape |
+| `--score_th` | `0.7` | Class confidence threshold |
+| `--with_p6` | Disabled | Enable P6 in FPN/PAN; flag without a value |
+
+`simple_demo.py` and `Ninjutsu_demo.py` also accept `--nms_th` (default `0.45`)
+and `--nms_score_th` (default `0.1`). The embedded-post-processing demo does not expose these options.
+
+### Additional ninjutsu options
+
+| Option | Default | Meaning |
+| --- | --- | --- |
+| `--sign_interval` | `2.0` | Seconds without a new sign before clearing history |
+| `--jutsu_display_time` | `5` | Seconds to display a matched technique |
+| `--use_display_score` | `False` | Show detection confidence |
+| `--erase_bbox` | `False` | Hide bounding-box overlays |
+| `--chattering_check` | `1` | Consecutive detections required to accept a sign |
+| `--use_fullscreen` | `False` | Experimental fullscreen display |
+| `--use_jutsu_lang_en [True/False]` | Omitted | Deprecated compatibility option; always displays English |
+
+For the existing `--use_display_score`, `--erase_bbox`, and `--use_fullscreen`
+options, pass `True` to enable and omit the option to disable. Their original
+`type=bool` parsing is retained: passing the string `False` also enables them.
+
+`--use_jutsu_lang_en`, `--use_jutsu_lang_en True`, and `--use_jutsu_lang_en False`
+are all accepted and issue an English deprecation warning. None changes the language.
+
+## Configuration and matching
+
+`utils/hand_signs.py` loads the same configuration for all current demos.
+Display names are independent of recognition IDs.
+
+### Labels: `setting/labels.csv`
+
+The file has an `id,name` header. IDs are consecutive integers starting at 0;
+duplicates, missing IDs, and empty names are rejected.
+
+```csv
+id,name
+0,None
+1,Rat
+2,Ox
+3,Tiger
+```
+
+This example shows only the first rows. The complete mapping is:
+
+| ID | Name | ID | Name |
+| --- | --- | --- | --- |
+| 0 | None | 8 | Ram |
+| 1 | Rat | 9 | Monkey |
+| 2 | Ox | 10 | Bird |
+| 3 | Tiger | 11 | Dog |
+| 4 | Hare | 12 | Boar |
+| 5 | Dragon | 13 | Hand Claps |
+| 6 | Snake | 14 | Unknown |
+| 7 | Horse | 15 | Mizunoe |
+
+Keep these IDs unchanged: a model class maps to `int(class_id) + 1`.
+Changing a display name does not change recognition.
+
+### Techniques: `setting/jutsu.csv`
+
+Each row is `style,name,sign_id,...`, with **no header** and no trailing empty cells.
+The style may be empty. A name and at least one known sign ID are required.
+
+```csv
+Fire Style,Fireball Jutsu,6,3,9,12,7,3
+,Clone Jutsu,8,6,3
+```
+
+Matching compares the entire history to each sequence in file order; the first
+exact match wins. A suffix or incomplete sequence does not count. The file contains
+14 rows, including both Fireball sequences and the 44-sign Water Dragon sequence.
+Water Dragon is classified as **Water Style**.
+
+### Migrating custom CSV files
+
+1. Back up custom files before replacing them. The old label format had English
+   and Japanese names without a header. Assign each existing row its zero-based
+   row index as `id`, retain this order, and write `id,name` with English names.
+2. Build a lookup from each old Japanese label to that same numeric ID.
+3. For each old technique row, keep its English style (old column B) and English
+   name (old column D). Convert every nonempty sign from old column E onward using
+   the lookup. Remove trailing blank cells and the Japanese style/name columns.
+4. Preserve technique row order and alternative sequences. Use `Water Style` for
+   Water Dragon. Update custom CSV consumers to the new schema at the same time.
+
+The current loaders require the new schema. Legacy demos continue to use their own
+original CSV files under `_legacy/v2/setting`.
+
+## Dataset
+
+The training dataset is private; trained models are public. The original author
+cites <span id="cite_ref-3">Article 47-7 of Japan's Copyright Act</span> [3](#cite_note-3)
+for the dataset distribution policy. Training images include the author's photos,
+anime images, and the public
+<span id="cite_ref-4">Naruto hand-sign dataset</span> [4](#cite_note-4).
+
+Backgrounds and clothing can reduce detection accuracy. Reports of false detections,
+with their conditions and sample images where possible, help improve training.
+The original project requests examples for the twelve animal signs, Mizunoe, and Hand Claps;
+submitted examples may be added to the training dataset.
+
+### Hand signs
+
+The model recognizes 14 kinds of hand signs: the twelve animal signs, Mizunoe,
+and Hand Claps. `None` and `Unknown` remain reserved entries in the label mapping.
 
 <table>
 	<tbody>
 		<tr>
-			<td width="25%">子(Ne/Rat)</td>
-			<td width="25%">丑(Ushi/Ox)</td>
-			<td width="25%">寅(Tora/Tiger)</td>
-			<td width="25%">卯(U/Hare)</td>
+			<td width="25%">Rat</td>
+			<td width="25%">Ox</td>
+			<td width="25%">Tiger</td>
+			<td width="25%">Hare</td>
 		</tr>
 		<tr>
 			<td><img src="https://user-images.githubusercontent.com/37477845/95611897-6d032d00-0a9d-11eb-86c4-de1c50c0d7b6.jpg" width="100%"></td>
@@ -77,10 +200,10 @@ Issueで誤検出した条件を教えていただると助かります。<br>
 <table>
 	<tbody>
 		<tr>
-			<td width="25%">辰(Tatsu/Dragon)</td>
-			<td width="25%">巳(Mi/Snake)</td>
-			<td width="25%">午(Uma/Horse)</td>
-			<td width="25%">未(Hitsuji/Ram)</td>
+			<td width="25%">Dragon</td>
+			<td width="25%">Snake</td>
+			<td width="25%">Horse</td>
+			<td width="25%">Ram</td>
 		</tr>
 		<tr>
 			<td><img src="https://user-images.githubusercontent.com/37477845/95611920-7391a480-0a9d-11eb-8e74-db39acf90f83.jpg" width="100%"></td>
@@ -93,10 +216,10 @@ Issueで誤検出した条件を教えていただると助かります。<br>
 <table>
 	<tbody>
 		<tr>
-			<td width="25%">申(Saru/Monkey)</td>
-			<td width="25%">酉(Tori/Bird)</td>
-			<td width="25%">戌(Inu/Dog)</td>
-			<td width="25%">亥(I/Boar)</td>
+			<td width="25%">Monkey</td>
+			<td width="25%">Bird</td>
+			<td width="25%">Dog</td>
+			<td width="25%">Boar</td>
 		</tr>
 		<tr>
 			<td><img src="https://user-images.githubusercontent.com/37477845/95611931-77252b80-0a9d-11eb-97d6-e3efc6f1aac3.jpg" width="100%"></td>
@@ -109,8 +232,8 @@ Issueで誤検出した条件を教えていただると助かります。<br>
 <table>
 	<tbody>
 		<tr>
-			<td width="25%">壬(Mizunoe)</td>
-			<td width="25%">合掌(Gassho/Hand Claps)</td>
+			<td width="25%">Mizunoe</td>
+			<td width="25%">Hand Claps</td>
 			<td width="25%">-</td>
 			<td width="25%">-</td>
 		</tr>
@@ -123,208 +246,66 @@ Issueで誤検出した条件を教えていただると助かります。<br>
 	</tbody>
 </table>
 
-### データセットの枚数
-総枚数：10026(内アニメ画像：2651枚)<br>
-タグ付き枚数：7098枚<br>
-タグ無し枚数：2928枚<br>
-アノテーションボックス数：8941個<br>
-<img src="https://user-images.githubusercontent.com/37477845/163701957-529d7510-88e4-420f-8099-5dd6f6d9a8cf.png" width="35%">　<img src="https://user-images.githubusercontent.com/37477845/163701962-a4818eba-3b4f-4c92-a7b9-f2331b7f3f23.png" width="50%">
+### Dataset size
 
-# Trained Model
-訓練済みモデルをmodelディレクトリ配下で公開しています。 ※旧バージョンのモデルは「_legacy」ディレクトリに移動
-* YOLOX-Nano
+- Total images: 10,026 (including 2,651 anime images)
+- Annotated images: 7,098
+- Unannotated images: 2,928
+- Annotation boxes: 8,941
 
-# Directory
-<pre>
-│  simple_demo.py
-│  Ninjutsu_demo.py
-│
-├─model
-│  └─yolox
-│      │ yolox_nano.onnx
-│      └─yolox_onnx.py
-│
-├─post_process_gen_tools
-│      │ convert_script.sh
-│      │ make_box_gather_nd.py
-│      │ make_boxes_scores.py
-│      │ make_cxcywh_y1x1y2x2.py
-│      │ make_final_batch_nums_final_class_nums_final_box_nums.py
-│      │ make_grids.py
-│      │ make_input_output_shape_update.py
-│      │ make_nms_outputs_merge.py
-│      └─make_score_gather_nd.py
-│
-├─setting─┬─labels.csv
-│         └─jutsu.csv
-│
-├─utils
-│
-└─_legacy
-</pre>
-#### simple_demo.py
-　シンプルな検出デモです。<br>
-　<img src="https://user-images.githubusercontent.com/37477845/95647513-06b4f380-0b0b-11eb-8caf-5cb092ccdb66.jpg" width="35%">
+<img src="https://user-images.githubusercontent.com/37477845/163701957-529d7510-88e4-420f-8099-5dd6f6d9a8cf.png" width="35%"> <img src="https://user-images.githubusercontent.com/37477845/163701962-a4818eba-3b4f-4c92-a7b9-f2331b7f3f23.png" width="50%">
 
-#### Ninjutsu_demo.py
-　忍術判定のデモです。<br>
-　印の履歴から術データ(jutsu.csv)にマッチする術名を表示します。<br>
-　<img src="https://user-images.githubusercontent.com/37477845/95490010-93a86180-09d2-11eb-8185-e50fd2b5c137.gif" width="35%">
-　<!--<img src="https://user-images.githubusercontent.com/37477845/95647523-13394c00-0b0b-11eb-935b-a5a94e2f523d.jpg" width="35%">-->
+## Repository layout
 
-#### model
-　訓練済みモデルを格納しています。
+- `model/yolox`: trained ONNX models and inference wrappers
+- `setting`: English label names and ID-based technique sequences
+- `utils`: CSV loading, sequence matching, FPS measurement, and text rendering
+- `utils/font/KouzanMouhitsu.ttf`: original bundled font, renamed for an English path
+- `post_process_gen_tools`: tools for merging post-processing into ONNX
+- `_legacy/v2`: unchanged SSD/EfficientDet implementation and its documentation
+- `tests`: configuration, matching, rendering, and CLI regression tests
 
-#### post_process_gen_tools
-　ONNXにすべての後処理をマージするスクリプト群を格納しています。
+## Tests
 
-#### setting
-　ラベルデータ(labels.csv)と術名データ(jutsu.csv)を格納しています。
-* labels.csv<br>
-印のラベル名を保持しています。<br>
-    * A列：英語の印
-    * B列：日本語の印
-* jutsu.csv<br>
-術名と必要印を保持しています。<br>
-    * A列：日本語の術種別(火遁等)
-    * B列：英語の術種別(火遁等)
-    * C列：日本語の術名
-    * D列：英語の術名
-    * E列以降：術の発動に必要な印
+With the demo dependencies installed, run from the repository root:
 
-#### utils
-　FPS計測用モジュール(cvfpscalc.py)と文字列描画用モジュール(cvdrawtext.py)を格納しています。<br>
-　Ninjutsu_demo.pyのみで使用します。
-
-# Usage
-デモの実行方法は以下です。
 ```bash
-python simple_demo.py
-python simple_demo_without_post.py
-python Ninjutsu_demo.py
+python -m unittest discover -s tests -v
 ```
 
-また、デモ実行時には、以下のオプションが指定可能です。
-<details>
-<summary>オプション指定</summary>
+## Application example
 
-* --device<br>
-カメラデバイス番号の指定<br>
-デフォルト：
-    * simple_demo.py：0
-    * Ninjutsu_demo.py：0
-* --file<br>
-動画ファイル名の指定 ※指定時はカメラデバイスより優先し動画を読み込む<br>
-デフォルト：
-    * simple_demo.py：None
-    * Ninjutsu_demo.py：None
-* --fps<br>
-処理FPS ※推論時間がFPSを下回る場合のみ有効<br>
-デフォルト：
-    * simple_demo.py：30
-    * Ninjutsu_demo.py：30
-* --width<br>
-カメラキャプチャ時の横幅<br>
-デフォルト：
-    * simple_demo.py：960
-    * Ninjutsu_demo.py：960
-* --height<br>
-カメラキャプチャ時の縦幅<br>
-デフォルト：
-    * simple_demo.py：540
-    * Ninjutsu_demo.py：540
-* --skip_frame<br>
-カメラ or 動画読み込み時に何枚おきに処理を実行するか<br>
-デフォルト：
-    * simple_demo.py：0
-    * Ninjutsu_demo.py：0
-* --model<br>
-ロードするモデルの格納パス<br>
-デフォルト：
-    * simple_demo.py：model/yolox/yolox_nano.onnx
-    * Ninjutsu_demo.py：model/yolox/yolox_nano.onnx
-* --input_shape<br>
-モデルの入力サイズ<br>
-デフォルト：
-    * simple_demo.py：416,416
-    * Ninjutsu_demo.py：416,416
-* --score_th<br>
-クラス判別の閾値<br>
-デフォルト：
-    * simple_demo.py：0.7
-    * Ninjutsu_demo.py：0.7
-* --nms_th<br>
-NMSの閾値<br>
-デフォルト：
-    * simple_demo.py：0.45
-    * Ninjutsu_demo.py：0.45
-* --nms_score_th<br>
-NMSのスコア閾値<br>
-デフォルト：
-    * simple_demo.py：0.1
-    * Ninjutsu_demo.py：0.1
-* --sign_interval<br>
-前回の印検出時から指定時間(秒)経過すると印の履歴をクリア<br>
-デフォルト：
-    * Ninjutsu_demo.py：2.0
-* --jutsu_display_time<br>
-術成立時に術名を表示する時間(秒)<br>
-デフォルト：
-    * Ninjutsu_demo.py：5
-* --use_display_score<br>
-印検出スコアを表示するか否か<br>
-デフォルト：
-    * Ninjutsu_demo.py：False
-* --erase_bbox<br>
-バウンディングボックスのオーバーレイ表示を消去するか否か<br>
-デフォルト：
-    * Ninjutsu_demo.py：False
-* --use_jutsu_lang_en<br>
-術名表示に英語表記を使用するか否か<br>
-デフォルト：
-    * Ninjutsu_demo.py：False
-* --chattering_check<br>
-印を何回連続で検出したら印の成立とみなすか(印の検出チラつき対策)<br>
-デフォルト：
-    * Ninjutsu_demo.py：1
-* --use_fullscreen<br>
-フルスクリーン表示を利用するか否か(試験的機能)<br>
-デフォルト：
-    * Ninjutsu_demo.py：False
-</details>
+[Sign VADERS — 15th UE4 Petit Contest](https://www.youtube.com/watch?v=K4-E5SseVtI)
 
-# Application Example
-アプリケーションの応用事例を紹介します。
-* [第15回UE4ぷちコン「印VADERS」](https://www.youtube.com/watch?v=K4-E5SseVtI)
-<!--
-|忍認証システム|忍者アカデミー試験対策|Deep写輪眼スマートグラス|
-|:---:|:---:|:---:|
-|<img src="https://user-images.githubusercontent.com/37477845/95650546-3a9a1400-0b1f-11eb-9b80-c58256b268a3.gif" width="100%">|<img src="https://user-images.githubusercontent.com/37477845/95650553-44237c00-0b1f-11eb-8a85-7e5e72e80120.gif" width="100%">|<img src="https://user-images.githubusercontent.com/37477845/95650659-d9267500-0b1f-11eb-90d7-d82cdb2c2824.png" width="100%">|
--->
+## Acknowledgements
 
-# Acknowledgements
-EfficientDetモデルトレーニング時は、からあげさんの<span id="cite_ref-5">説明記事</span><sup>[5](#cite_note-5)</sup>を参考にいたしました。<br>
-また、<span id="cite_ref-6">からあげさんのブログ</span><sup>[6](#cite_note-6)</sup>にて、Deep写輪眼をご紹介いただきました。<br>
-大変ありがとうございます。<br><br>
-YOLOXのトレーニングには<span id="cite_ref-7">YOLOX-Colaboratory-Training-Sample</span><sup>[7](#cite_note-7)</sup>を使用しています。
+The original EfficientDet training used
+<span id="cite_ref-5">karaage's Object Detection API tutorial</span> [5](#cite_note-5).
+Karaage also introduced Deep Sharingan on
+<span id="cite_ref-6">his blog</span> [6](#cite_note-6).
+YOLOX training used
+<span id="cite_ref-7">YOLOX-Colaboratory-Training-Sample</span> [7](#cite_note-7).
+Thank you to these authors for their work.
 
-# References
-1. [^](#cite_ref-1)<span id="cite_note-1">日本：[著作権法 第二十条「同一性保持権」](https://elaws.e-gov.go.jp/search/elawsSearch/elaws_search/lsg0500/detail?lawId=345AC0000000048#183)</span>
-1. [^](#cite_ref-2)<span id="cite_note-2">岸本斉史作『[NARUTO](https://www.shonenjump.com/j/rensai/naruto.html)』集英社、1999年-2014年</span>
-1. [^](#cite_ref-3)<span id="cite_note-3">日本：[著作権法 四十七条の七「複製権の制限により作成された複製物の譲渡」](https://elaws.e-gov.go.jp/search/elawsSearch/elaws_search/lsg0500/detail?lawId=345AC0000000048#407)</span>
-1. [^](#cite_ref-4)<span id="cite_note-4">Kaggle 公開データセット：[naruto-hand-sign-dataset](https://www.kaggle.com/vikranthkanumuru/naruto-hand-sign-dataset)</span>
-1. [^](#cite_ref-5)<span id="cite_note-5">[「Object Detection API」で物体検出の自前データを学習する方法（TensorFlow 2.x版）](https://qiita.com/karaage0703/items/8567cc192e151bac3e50)</span>
-1. [^](#cite_ref-6)<span id="cite_note-6">からあげさんのブログ：[AIでNARUTO気分！「Deep写輪眼」で遊んでみよう](https://karaage.hatenadiary.jp/entry/2020/10/16/073000)</span>
+## References
+1. [^](#cite_ref-1)<span id="cite_note-1">Japan: [Copyright Law Article 20 "Right to maintain identity"](https://elaws.e-gov.go.jp/search/elawsSearch/elaws_search/lsg0500/detail?lawId=345AC0000000048#183)</span>
+1. [^](#cite_ref-2)<span id="cite_note-2">[NARUTO](https://www.shonenjump.com/j/rensai/naruto.html)Masashi Kishimoto/Shueisha 1999-2014</span>
+1. [^](#cite_ref-3)<span id="cite_note-3">Japan: [Copyright Act Article 47-7 "Transfer of reproductions made due to restrictions on reproduction rights"](https://elaws.e-gov.go.jp/search/elawsSearch/elaws_search/lsg0500/detail?lawId=345AC0000000048#407)</span>
+1. [^](#cite_ref-4)<span id="cite_note-4">Kaggle Public dataset: [naruto-hand-sign-dataset](https://www.kaggle.com/vikranthkanumuru/naruto-hand-sign-dataset)</span>
+1. [^](#cite_ref-5)<span id="cite_note-5">Karaage-san's blog: [Training an object detector on custom data with the Object Detection API (TensorFlow 2.x)](https://qiita.com/karaage0703/items/8567cc192e151bac3e50)</span>
+1. [^](#cite_ref-6)<span id="cite_note-6">Karaage-san's blog: [Experience Naruto with AI: playing with Deep Sharingan](https://karaage.hatenadiary.jp/entry/2020/10/16/073000)</span>
 1. [^](#cite_ref-7)<span id="cite_note-7">[Kazuhito00/YOLOX-Colaboratory-Training-Sample](https://github.com/Kazuhito00/YOLOX-Colaboratory-Training-Sample)</span>
 
-# Authors
-高橋かずひと(https://twitter.com/KzhtTkhs)
-<!--
-# Affiliations(所属)
--->
+## Author
 
-# License
-NARUTO-HandSignDetection is under [MIT license](https://en.wikipedia.org/wiki/MIT_License).
+[Kazuhito Takahashi](https://twitter.com/KzhtTkhs)
 
-# License(Font)
-衡山毛筆フォント(https://opentype.jp/kouzanmouhitufont.htm)
+## License
+
+NARUTO-HandSignDetection is distributed under the [MIT license](LICENSE).
+
+### Font license and attribution
+
+The bundled [KouzanMouhitsu font](https://opentype.jp/kouzanmouhitufont.htm)
+retains its original licensing terms. Only its local filename was changed;
+its binary contents are unchanged. Consult the font's original page for its terms.

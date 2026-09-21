@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import csv
 import time
 import copy
 import argparse
 
 import cv2 as cv
+
+from utils.hand_signs import load_labels
 
 from model.yolox.yolox_onnx_without_post import YoloxONNX
 
@@ -51,7 +52,7 @@ def get_args():
 
 
 def main():
-    # 引数解析 #################################################################
+    # Parse arguments #################################################################
     args = get_args()
     cap_device = args.device
     cap_width = args.width
@@ -69,7 +70,7 @@ def main():
 
     frame_count = 0
 
-    # カメラ準備 ###############################################################
+    # Prepare camera ###############################################################
     cap = cv.VideoCapture(cap_device)
     cap.set(cv.CAP_PROP_FRAME_WIDTH, cap_width)
     cap.set(cv.CAP_PROP_FRAME_HEIGHT, cap_height)
@@ -82,7 +83,7 @@ def main():
         frameSize=(cap_width, cap_height),
     )
 
-    # モデルロード #############################################################
+    # Load model #############################################################
     yolox = YoloxONNX(
         model_path=model_path,
         input_shape=input_shape,
@@ -90,15 +91,13 @@ def main():
         with_p6=with_p6,
     )
 
-    # ラベル読み込み ###########################################################
-    with open('setting/labels.csv', encoding='utf8') as f:
-        labels = csv.reader(f)
-        labels = [row for row in labels]
+    # Load labels ###########################################################
+    labels = load_labels()
 
     while True:
         start_time = time.time()
 
-        # カメラキャプチャ #####################################################
+        # Capture frame #####################################################
         ret, frame = cap.read()
         if not ret:
             continue
@@ -108,7 +107,7 @@ def main():
         if (frame_count % (skip_frame + 1)) != 0:
             continue
 
-        # 検出実施 #############################################################
+        # Detect hand signs #############################################################
         bboxes, scores, class_ids = yolox.inference(frame)
 
         for bbox, score, class_id in zip(bboxes, scores, class_ids):
@@ -116,18 +115,18 @@ def main():
             if score < score_th:
                 continue
 
-            # 検出結果可視化 ###################################################
+            # Draw detections ###################################################
             x1, y1 = int(bbox[0]), int(bbox[1])
             x2, y2 = int(bbox[2]), int(bbox[3])
             score = float(score)
 
             cv.putText(
-                debug_image, f'ID:{str(class_id)} {labels[class_id][0]} {score:.3f}',
+                debug_image, f'ID:{str(class_id)} {labels[class_id]} {score:.3f}',
                 (x1, y1 - 15), cv.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2,
                 cv.LINE_AA)
             cv.rectangle(debug_image, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
-        # FPS調整 #############################################################
+        # Limit FPS #############################################################
         elapsed_time = time.time() - start_time
         sleep_time = max(0, ((1.0 / fps) - elapsed_time))
         time.sleep(sleep_time)
@@ -137,11 +136,11 @@ def main():
             "Elapsed Time:" + '{:.1f}'.format(elapsed_time * 1000) + "ms",
             (10, 30), cv.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2, cv.LINE_AA)
 
-        # 画面反映 #############################################################
+        # Render frame #############################################################
         cv.imshow('NARUTO HandSignDetection Simple Demo', debug_image)
         video_writer.write(debug_image)
 
-        # キー処理(ESC：終了) #################################################
+        # Handle keyboard input(ESC: exit) #################################################
         key = cv.waitKey(1) if args.file is None else cv.waitKey(0)
         if key == 27:  # ESC
             break

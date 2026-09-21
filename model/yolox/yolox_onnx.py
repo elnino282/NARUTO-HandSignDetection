@@ -18,17 +18,17 @@ class YoloxONNX(object):
         with_p6=False,
         providers=['CUDAExecutionProvider', 'CPUExecutionProvider'],
     ):
-        # 入力サイズ
+        # Input size
         self.input_shape = input_shape
 
-        # 閾値
+        # Thresholds
         self.class_score_th = class_score_th
         self.nms_th = nms_th
         self.nms_score_th = nms_score_th
 
         self.with_p6 = with_p6
 
-        # モデル読み込み
+        # Load model
         self.onnx_session = onnxruntime.InferenceSession(
             model_path,
             providers=providers,
@@ -41,16 +41,16 @@ class YoloxONNX(object):
         temp_image = copy.deepcopy(image)
         image_height, image_width = image.shape[0], image.shape[1]
 
-        # 前処理
+        # Preprocess
         image, ratio = self._preprocess(temp_image, self.input_shape)
 
-        # 推論実施
+        # Run inference
         results = self.onnx_session.run(
             None,
             {self.input_name: image[None, :, :, :]},
         )
 
-        # 後処理
+        # Postprocess
         bboxes, scores, class_ids = self._postprocess(
             results[0],
             self.input_shape,
